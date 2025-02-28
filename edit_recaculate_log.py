@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from collections import Counter
 
-st.title("Editable DataFrame with Edit History (Run Button Enabled)")
+st.title("Editable DataFrame with Field Index & Edit History")
 
 # Initialize session state for DataFrame and edit history
 if "df" not in st.session_state:
@@ -11,9 +11,10 @@ if "df" not in st.session_state:
 if "edit_history" not in st.session_state:
     st.session_state.edit_history = []
 
-# Function to generate DataFrame
+# Function to generate DataFrame with "field" index
 def generate_dataframe():
     data = {
+        "field": [f"data{i+1}" for i in range(10)],  # Index column
         "run_1": [10, 20, 15, 5,  np.nan, 40, 50, 60, 70,  np.nan],
         "run_2": [10, np.nan, 15, 5,  25,     40, 50, 55, 70,  80],
         "run_3": [10, 20,    np.nan, 10, 25,     40, np.nan, 60, 70,  80],
@@ -24,7 +25,7 @@ def generate_dataframe():
 
 # Function to compute majority (mode) ignoring NaN
 def compute_majority(row):
-    values = [v for v in row if pd.notnull(v)]
+    values = [v for v in row[1:] if pd.notnull(v)]  # Exclude "field" column
     return Counter(values).most_common(1)[0][0] if values else np.nan
 
 # "Run" button to generate the DataFrame
@@ -45,16 +46,17 @@ if st.session_state.df is not None:
     # Compare original vs edited values and log changes
     for row_idx in range(len(st.session_state.df)):
         for col in st.session_state.df.columns:
-            old_value = st.session_state.df.at[row_idx, col]
-            new_value = edited_df.at[row_idx, col]
+            if col != "field":  # Don't track changes to the "field" column
+                old_value = st.session_state.df.at[row_idx, col]
+                new_value = edited_df.at[row_idx, col]
 
-            if old_value != new_value and pd.notnull(new_value):
-                st.session_state.edit_history.append({
-                    "Row": row_idx + 1,
-                    "Column": col,
-                    "Old Value": old_value,
-                    "New Value": new_value
-                })
+                if old_value != new_value and pd.notnull(new_value):
+                    st.session_state.edit_history.append({
+                        "Field": edited_df.at[row_idx, "field"],
+                        "Column": col,
+                        "Old Value": old_value,
+                        "New Value": new_value
+                    })
 
     # Recalculate majority after edits
     edited_df["majority_value"] = edited_df.apply(compute_majority, axis=1)
