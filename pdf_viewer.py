@@ -18,8 +18,8 @@ def extract_pdf_info(file_path):
     pages = []
     
     for page_num in range(len(doc)):
-        text = doc[page_num].get_text("text")[:100]  # Extract first 100 chars
-        link = f"View Page {page_num+1}"  # The clickable link
+        text = doc[page_num].get_text("text")[:100]  # Extract first 100 characters
+        link = f'<a href="?page={page_num+1}" target="_self">View Page {page_num+1}</a>'  # Clickable link
         pages.append({"Page": page_num + 1, "Extracted Text": text + "...", "Link": link})
     
     return pd.DataFrame(pages)
@@ -36,27 +36,20 @@ if uploaded_file:
     # Store PDF path in session state
     st.session_state["pdf_path"] = pdf_path
 
-    # Select a page to display
-    if "selected_page" not in st.session_state:
-        st.session_state["selected_page"] = 1  # Default to Page 1
+    # Get selected page from query parameters
+    query_params = st.experimental_get_query_params()
+    selected_page = int(query_params.get("page", [1])[0])  # Default to Page 1
 
-    # Function to update selected page
-    def update_page(page_num):
-        st.session_state["selected_page"] = page_num
-
-    # Display extracted data as a table with buttons
+    # Display extracted data with clickable links
     st.write("### Extracted Data")
 
-    for _, row in extracted_df.iterrows():
-        col1, col2, col3 = st.columns([1, 4, 1])
-        with col1:
-            st.write(f"Page {row['Page']}")
-        with col2:
-            st.write(row["Extracted Text"])
-        with col3:
-            if st.button(row["Link"], key=f"btn_{row['Page']}"):
-                update_page(row["Page"])  # Update page number when clicked
+    # Convert DataFrame to Markdown for rendering HTML links
+    def render_link(row):
+        return row["Link"]
+
+    extracted_df["Link"] = extracted_df.apply(render_link, axis=1)
+    st.markdown(extracted_df.to_html(escape=False, index=False), unsafe_allow_html=True)
 
     # Display PDF viewer
     st.write("### PDF Viewer")
-    pdf_viewer(st.session_state["pdf_path"], page_number=st.session_state["selected_page"])
+    pdf_viewer(st.session_state["pdf_path"], page_number=selected_page)
