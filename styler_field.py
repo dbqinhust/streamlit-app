@@ -1,17 +1,18 @@
 import streamlit as st
 
 html = """
-<div style="display: flex; justify-content: flex-end;">
-  <table style="border-collapse: collapse;">
-    <tr>
-      <td style="background-color: lightcoral; padding: 8px; width: 100px;"></td>
-      <td style="padding: 8px;">Red</td>
-    </tr>
-    <tr>
-      <td style="background-color: khaki; padding: 8px;"></td>
-      <td style="padding: 8px;">Yellow</td>
-    </tr>
-  </table>
+<div style="display: flex; justify-content: flex-end; gap: 30px;">
+
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <div style="width: 20px; height: 20px; background-color: red; border-radius: 50%;"></div>
+    <span>Red</span>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <div style="width: 20px; height: 20px; background-color: yellow; border-radius: 50%; border: 1px solid #ccc;"></div>
+    <span>Yellow</span>
+  </div>
+
 </div>
 """
 
