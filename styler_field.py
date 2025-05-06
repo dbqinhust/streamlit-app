@@ -1,25 +1,18 @@
 import streamlit as st
-import pandas as pd
 
-# Create 2×2 DataFrame: empty + color labels
-df = pd.DataFrame([
-    ["", "Red"],
-    ["", "Yellow"]
-])
-
-# Apply background color only to first column based on value in second column
-def color_first_column(row):
-    if row[1] == "Red":
-        return ["background-color: lightcoral", ""]
-    elif row[1] == "Yellow":
-        return ["background-color: khaki", ""]
-    return ["", ""]
-
-# Apply styling row-wise
-styled = df.style.apply(color_first_column, axis=1)
-
-# Hide index and column headers (requires pandas ≥ 2.0)
-styled = styled.hide(axis="index").hide(axis="columns")
+# Define your table manually
+html = """
+<table style="border-collapse: collapse;">
+  <tr>
+    <td style="background-color: lightcoral; padding: 8px; width: 100px;"></td>
+    <td style="padding: 8px;">Red</td>
+  </tr>
+  <tr>
+    <td style="background-color: khaki; padding: 8px;"></td>
+    <td style="padding: 8px;">Yellow</td>
+  </tr>
+</table>
+"""
 
 # Display in Streamlit
-st.dataframe(styled, use_container_width=True)
+st.markdown(html, unsafe_allow_html=True)
