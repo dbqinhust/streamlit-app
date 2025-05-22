@@ -1,21 +1,35 @@
 import streamlit as st
 from docx import Document
 import io
+import openai
+import os
 
-st.title("Upload and Extract Text from Word Document")
+# Set your OpenAI key here or via environment variable
+openai.api_key = os.getenv("OPENAI_API_KEY")  # Recommended way
 
-uploaded_file = st.file_uploader("Upload a .docx file", type="docx")
+st.title("Word Document Summarizer")
+
+uploaded_file = st.file_uploader("Upload a Word (.docx) file", type="docx")
 
 if uploaded_file is not None:
-    # Read the file into a Document object
+    # Extract text from Word file
     doc = Document(io.BytesIO(uploaded_file.read()))
-    
-    # Extract all text
-    full_text = []
-    for para in doc.paragraphs:
-        full_text.append(para.text)
-    
-    text_output = "\n".join(full_text)
-    
-    st.subheader("Extracted Text:")
-    st.text_area("Document Text", text_output, height=400)
+    full_text = "\n".join([p.text for p in doc.paragraphs if p.text.strip()])
+
+    st.subheader("Extracted Text")
+    st.text_area("Document Content", full_text, height=300)
+
+    if st.button("Summarize"):
+        with st.spinner("Summarizing..."):
+            response = openai.ChatCompletion.create(
+                model="gpt-4",  # or "gpt-3.5-turbo"
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant that summarizes documents."},
+                    {"role": "user", "content": f"Please summarize the following document:\n\n{full_text}"}
+                ],
+                temperature=0.5
+            )
+            summary = response.choices[0].message.content
+            st.subheader("Summary")
+            st.write(summary)
+
